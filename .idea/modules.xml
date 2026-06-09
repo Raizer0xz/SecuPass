@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/SAG Service/SAG-Service/SAG-Service.iml" filepath="$PROJECT_DIR$/SAG Service/SAG-Service/SAG-Service.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/SecuPass.iml" filepath="$PROJECT_DIR$/.idea/SecuPass.iml" />
     </modules>
   </component>

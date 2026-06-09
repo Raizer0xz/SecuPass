@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="ProjectRootManager">
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/Audit Service/Audit-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/API Gateway/API-Gateway/pom.xml" />
+        <option value="$PROJECT_DIR$/Vehicle Service/Vehicle-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/SAG Service/SAG-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/Report Service/Report-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/Docs Service/Docs-Service/pom.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_X" default="true" project-jdk-name="openjdk-26" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
 </project>
