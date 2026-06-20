@@ -10,10 +10,17 @@
         <option value="$PROJECT_DIR$/SAG Service/SAG-Service/pom.xml" />
         <option value="$PROJECT_DIR$/Report Service/Report-Service/pom.xml" />
         <option value="$PROJECT_DIR$/Docs Service/Docs-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/Report-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/SAG-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/API-Gateway/pom.xml" />
+        <option value="$PROJECT_DIR$/Audit-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/Auth-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/Docs-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/Vehicle-Service/pom.xml" />
       </list>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_X" default="true" project-jdk-name="openjdk-26" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_25" project-jdk-name="openjdk-26" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
 </project>

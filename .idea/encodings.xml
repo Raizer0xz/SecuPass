@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
-    <file url="file://$PROJECT_DIR$/API Gateway/API-Gateway/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/Audit Service/Audit-Service/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/Docs Service/Docs-Service/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/Report Service/Report-Service/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/SAG Service/SAG-Service/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/Vehicle Service/Vehicle-Service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/API-Gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Audit-Service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Auth-Service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Docs-Service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Report-Service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/SAG-Service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Vehicle-Service/src/main/java" charset="UTF-8" />
   </component>
 </project>
