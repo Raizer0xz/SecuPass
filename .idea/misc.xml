@@ -16,8 +16,8 @@
         <option value="$PROJECT_DIR$/Audit-Service/pom.xml" />
         <option value="$PROJECT_DIR$/Auth-Service/pom.xml" />
         <option value="$PROJECT_DIR$/Docs-Service/pom.xml" />
-        <option value="$PROJECT_DIR$/Vehicle-Service/pom.xml" />
         <option value="$PROJECT_DIR$/Eureka-Server/pom.xml" />
+        <option value="$PROJECT_DIR$/Vehicle-Service/pom.xml" />
       </list>
     </option>
   </component>

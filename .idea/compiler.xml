@@ -11,7 +11,7 @@
         <module name="Docs-Service" />
         <module name="Audit-Service" />
       </profile>
-      <profile name="Annotation profile for Auth-Service" enabled="true">
+      <profile name="Annotation profile for SAG-Service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -20,8 +20,18 @@
         </processorPath>
         <module name="API-Gateway" />
         <module name="Report-Service" />
-        <module name="Auth-Service" />
         <module name="SAG-Service" />
+        <module name="Auth-Service" />
+      </profile>
+      <profile name="Annotation profile for Vehicle-Service" enabled="true">
+        <sourceOutputDir name="../generated-sources/annotations" />
+        <sourceTestOutputDir name="../generated-test-sources/test-annotations" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/springframework/boot/spring-boot-configuration-processor/3.5.14/spring-boot-configuration-processor-3.5.14.jar" />
+        </processorPath>
+        <module name="Vehicle-Service.main" />
+        <module name="Vehicle-Service.test" />
       </profile>
     </annotationProcessing>
   </component>

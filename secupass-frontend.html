@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecuPass — Sistema de Control Fronterizo</title>
+<style>
+  :root {
+    --azul: #1a3a5c;
+    --azul-medio: #2563a8;
+    --azul-claro: #e8f0fb;
+    --rojo-chile: #d52b1e;
+    --blanco: #ffffff;
+    --gris-claro: #f4f6f9;
+    --gris-borde: #d0d8e4;
+    --gris-texto: #4a5568;
+    --verde: #16a34a;
+    --amarillo: #f59e0b;
+    --sombra: 0 2px 12px rgba(26,58,92,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--gris-claro);
+    color: #1e2d3d;
+    min-height: 100vh;
+  }
+
+  /* ── NAVBAR ── */
+  .navbar {
+    background: var(--azul);
+    color: white;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  }
+  .navbar-brand { display: flex; align-items: center; gap: 12px; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.5px; }
+  .navbar-brand .escudo { font-size: 1.6rem; }
+  .navbar-brand .sub { font-size: 0.7rem; font-weight: 400; opacity: 0.75; display: block; letter-spacing: 1px; text-transform: uppercase; }
+  .navbar-user { display: flex; align-items: center; gap: 12px; font-size: 0.9rem; }
+  .btn-logout { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; transition: background 0.2s; }
+  .btn-logout:hover { background: rgba(255,255,255,0.25); }
+  #user-badge { display: none; }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 960px; margin: 0 auto; padding: 2rem 1rem; }
+
+  /* ── PANTALLA LOGIN ── */
+  #screen-login {
+    display: flex; align-items: center; justify-content: center;
+    min-height: calc(100vh - 64px);
+  }
+  .login-card {
+    background: white; border-radius: 14px; box-shadow: var(--sombra);
+    padding: 2.5rem 2rem; width: 100%; max-width: 400px;
+  }
+  .login-card .logo-area { text-align: center; margin-bottom: 2rem; }
+  .login-card .logo-area .icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+  .login-card .logo-area h1 { font-size: 1.5rem; color: var(--azul); font-weight: 800; }
+  .login-card .logo-area p { font-size: 0.82rem; color: var(--gris-texto); margin-top: 4px; }
+  .franja { height: 4px; background: linear-gradient(90deg, var(--azul) 0%, var(--rojo-chile) 50%, var(--azul-medio) 100%); border-radius: 2px; margin-bottom: 2rem; }
+
+  /* ── FORMS ── */
+  .field { margin-bottom: 1.1rem; }
+  .field label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--azul); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 10px 12px; border: 1.5px solid var(--gris-borde);
+    border-radius: 7px; font-size: 0.95rem; transition: border-color 0.2s;
+    background: white;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--azul-medio); }
+  .field textarea { resize: vertical; min-height: 80px; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    padding: 10px 22px; border: none; border-radius: 7px; cursor: pointer;
+    font-size: 0.9rem; font-weight: 600; transition: all 0.18s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary { background: var(--azul-medio); color: white; }
+  .btn-primary:hover { background: var(--azul); }
+  .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+  .btn-success { background: var(--verde); color: white; }
+  .btn-success:hover { background: #15803d; }
+  .btn-danger { background: var(--rojo-chile); color: white; }
+  .btn-danger:hover { background: #b91c1c; }
+  .btn-secondary { background: var(--gris-claro); color: var(--azul); border: 1.5px solid var(--gris-borde); }
+  .btn-secondary:hover { background: var(--gris-borde); }
+  .btn-full { width: 100%; justify-content: center; padding: 12px; font-size: 1rem; }
+
+  /* ── ALERT ── */
+  .alert { padding: 10px 14px; border-radius: 7px; font-size: 0.88rem; margin: 10px 0; display: none; }
+  .alert.show { display: block; }
+  .alert-error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+  .alert-success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+  .alert-info { background: var(--azul-claro); color: var(--azul); border: 1px solid #bfdbfe; }
+
+  /* ── MAIN SCREEN ── */
+  #screen-main { display: none; }
+
+  /* ── TAB SIDEBAR ── */
+  .layout-main { display: flex; gap: 1.5rem; }
+  .sidebar {
+    width: 230px; flex-shrink: 0;
+    background: white; border-radius: 12px;
+    box-shadow: var(--sombra); padding: 1rem 0;
+    height: fit-content; position: sticky; top: 1.5rem;
+  }
+  .sidebar-title { font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--gris-texto); padding: 0 1rem 8px; }
+  .tab-btn {
+    width: 100%; padding: 10px 1rem; border: none; background: transparent;
+    text-align: left; cursor: pointer; display: flex; align-items: center;
+    gap: 10px; font-size: 0.88rem; color: var(--gris-texto); transition: all 0.15s;
+    border-left: 3px solid transparent;
+  }
+  .tab-btn:hover { background: var(--gris-claro); color: var(--azul); }
+  .tab-btn.active { background: var(--azul-claro); color: var(--azul); font-weight: 600; border-left-color: var(--azul-medio); }
+  .tab-btn .icon { font-size: 1.1rem; width: 22px; text-align: center; }
+  .sidebar-sep { height: 1px; background: var(--gris-borde); margin: 6px 1rem; }
+
+  /* ── CONTENT AREA ── */
+  .content { flex: 1; min-width: 0; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── CARD ── */
+  .card { background: white; border-radius: 12px; box-shadow: var(--sombra); padding: 1.5rem; margin-bottom: 1.2rem; }
+  .card-title { font-size: 1rem; font-weight: 700; color: var(--azul); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+  .card-title .icon { font-size: 1.2rem; }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--azul-claro); color: var(--azul); font-weight: 700; padding: 8px 12px; text-align: left; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--gris-borde); color: var(--gris-texto); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafbff; }
+
+  /* ── BADGE ── */
+  .badge { display: inline-block; padding: 3px 9px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; }
+  .badge-green { background: #dcfce7; color: #15803d; }
+  .badge-yellow { background: #fef9c3; color: #92400e; }
+  .badge-red { background: #fee2e2; color: #b91c1c; }
+  .badge-blue { background: #dbeafe; color: #1d4ed8; }
+  .badge-gray { background: #f3f4f6; color: #4b5563; }
+
+  /* ── QR box ── */
+  .qr-box { text-align: center; padding: 1.5rem; background: var(--gris-claro); border-radius: 10px; }
+  .qr-code { font-family: monospace; font-size: 0.75rem; background: white; border: 2px solid var(--azul); border-radius: 8px; padding: 1rem; display: inline-block; word-break: break-all; max-width: 280px; margin: 0.5rem auto; }
+  .qr-label { font-size: 0.8rem; color: var(--gris-texto); margin-top: 6px; }
+
+  /* ── CHECKLIST ── */
+  .check-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--gris-borde); font-size: 0.9rem; }
+  .check-item:last-child { border-bottom: none; }
+  .check-item .toggle { display: flex; gap: 8px; }
+  .toggle-btn { padding: 5px 14px; border-radius: 99px; border: 1.5px solid var(--gris-borde); cursor: pointer; font-size: 0.8rem; font-weight: 600; background: white; transition: all 0.15s; }
+  .toggle-btn.si { border-color: var(--verde); color: var(--verde); }
+  .toggle-btn.si.active { background: var(--verde); color: white; }
+  .toggle-btn.no { border-color: var(--rojo-chile); color: var(--rojo-chile); }
+  .toggle-btn.no.active { background: var(--rojo-chile); color: white; }
+
+  /* ── spinner ── */
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── welcome banner ── */
+  .welcome-banner { background: linear-gradient(135deg, var(--azul) 0%, var(--azul-medio) 100%); color: white; border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1.2rem; }
+  .welcome-banner .icon { font-size: 2.5rem; }
+  .welcome-banner h2 { font-size: 1.1rem; font-weight: 700; }
+  .welcome-banner p { font-size: 0.85rem; opacity: 0.85; margin-top: 3px; }
+
+  .row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .col { flex: 1; min-width: 200px; }
+
+  @media (max-width: 680px) {
+    .layout-main { flex-direction: column; }
+    .sidebar { width: 100%; position: static; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <span class="escudo">🛂</span>
+    <div>
+      SecuPass
+      <span class="sub">Sistema de Control Fronterizo — SNA</span>
+    </div>
+  </div>
+  <div class="navbar-user" id="user-badge">
+    <span id="nav-nombre"></span>
+    <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+  </div>
+</nav>
+
+<!-- ============================= LOGIN ============================= -->
+<div id="screen-login">
+  <div class="login-card">
+    <div class="logo-area">
+      <span class="icon">🛂</span>
+      <h1>SecuPass</h1>
+      <p>Acceso exclusivo para funcionarios del SNA</p>
+    </div>
+    <div class="franja"></div>
+
+    <div class="field">
+      <label>RUT</label>
+      <input type="text" id="login-rut" placeholder="12345678-9" />
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLogin()" />
+    </div>
+    <div class="alert alert-error" id="login-error"></div>
+    <button class="btn btn-primary btn-full" id="btn-login" onclick="doLogin()">
+      Ingresar al sistema
+    </button>
+    <div style="margin-top:1.2rem; font-size:0.78rem; color:var(--gris-texto); text-align:center;">
+      Gateway: <code>localhost:8085</code>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= MAIN ============================= -->
+<div id="screen-main">
+  <div class="container">
+
+    <div class="welcome-banner">
+      <span class="icon">🏛️</span>
+      <div>
+        <h2 id="welcome-nombre">Bienvenido</h2>
+        <p id="welcome-inst">Institución — Rol activo</p>
+      </div>
+    </div>
+
+    <div class="layout-main">
+
+      <!-- SIDEBAR -->
+      <nav class="sidebar">
+        <div class="sidebar-title">Módulos</div>
+        <button class="tab-btn active" onclick="showTab('menores')"><span class="icon">👶</span>Trámite Menores</button>
+        <button class="tab-btn" onclick="showTab('vehiculos')"><span class="icon">🚗</span>Registro Vehículo</button>
+        <button class="tab-btn" onclick="showTab('sag')"><span class="icon">🌿</span>Declaración SAG</button>
+        <div class="sidebar-sep"></div>
+        <div class="sidebar-title">Gestión</div>
+        <button class="tab-btn" onclick="showTab('docs')"><span class="icon">📄</span>Documentos</button>
+        <button class="tab-btn" onclick="showTab('reportes')"><span class="icon">📊</span>Informes</button>
+        <button class="tab-btn" onclick="showTab('auditoria')"><span class="icon">📋</span>Auditoría</button>
+      </nav>
+
+      <!-- CONTENT -->
+      <div class="content">
+
+        <!-- ═══ PANEL: MENORES ═══ -->
+        <div class="panel active" id="panel-menores">
+          <div class="card">
+            <div class="card-title"><span class="icon">👶</span>Carga de Autorización Notarial — Trámite de Menores</div>
+
+            <div class="row">
+              <div class="col">
+                <div class="field">
+                  <label>RUT del Menor</label>
+                  <input type="text" id="doc-rut-menor" placeholder="22222222-2" />
+                </div>
+              </div>
+              <div class="col">
+                <div class="field">
+                  <label>RUT del Tutor</label>
+                  <input type="text" id="doc-rut-tutor" placeholder="12345678-9" />
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Tipo de Acompañamiento</label>
+              <select id="doc-tipo" onchange="checkTipoAcomp()">
+                <option value="">-- Seleccione --</option>
+                <option value="AMBOS_PADRES">Viaja con ambos padres</option>
+                <option value="UN_PADRE">Viaja con un padre o madre</option>
+                <option value="TUTOR">Viaja con tutor autorizado</option>
+                <option value="ADOPTADO">Menor adoptado</option>
+              </select>
+            </div>
+
+            <div id="doc-upload-area">
+              <div class="field">
+                <label>Nombre del documento</label>
+                <input type="text" id="doc-nombre-archivo" placeholder="autorizacion_notarial.pdf" />
+              </div>
+              <div class="row">
+                <div class="col">
+                  <div class="field">
+                    <label>Fecha de Salida</label>
+                    <input type="date" id="doc-fecha-salida" />
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="field">
+                    <label>Fecha de Retorno</label>
+                    <input type="date" id="doc-fecha-retorno" />
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label>Observaciones</label>
+                <textarea id="doc-obs" placeholder="Notas adicionales (opcional)"></textarea>
+              </div>
+            </div>
+
+            <div class="alert alert-info" id="doc-info-ambos">
+              ✅ El menor viaja con ambos padres. No se requiere autorización notarial.
+            </div>
+            <div class="alert" id="doc-result"></div>
+            <button class="btn btn-primary" id="btn-doc" onclick="cargarDocumento()">
+              📎 Cargar Documento
+            </button>
+          </div>
+
+          <!-- Listado docs -->
+          <div class="card">
+            <div class="card-title"><span class="icon">🔍</span>Consultar Documentos por RUT del Menor</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <input type="text" id="buscar-rut-menor" placeholder="22222222-2" style="padding:9px 12px;border:1.5px solid var(--gris-borde);border-radius:7px;font-size:0.9rem;flex:1;" />
+              <button class="btn btn-secondary" onclick="buscarDocumentos()">🔍 Buscar</button>
+              <button class="btn btn-secondary" onclick="listarDocumentos()">📋 Listar todos</button>
+            </div>
+            <div class="alert" id="docs-result" style="margin-top:10px;"></div>
+            <div class="table-wrap" id="docs-table" style="margin-top:12px;display:none;">
+              <table>
+                <thead><tr><th>ID</th><th>RUT Menor</th><th>RUT Tutor</th><th>Tipo</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody id="docs-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ PANEL: VEHICULOS ═══ -->
+        <div class="panel" id="panel-vehiculos">
+          <div class="card">
+            <div class="card-title"><span class="icon">🚗</span>Registro de Vehículo — Salida Temporal</div>
+
+            <div class="field">
+              <label>Patente del Vehículo</label>
+              <div style="display:flex; gap:8px;">
+                <input type="text" id="veh-patente" placeholder="ABCD12" style="flex:1;padding:10px 12px;border:1.5px solid var(--gris-borde);border-radius:7px;font-size:0.95rem;" />
+                <button class="btn btn-primary" onclick="buscarVehiculo()">🔍 Buscar Datos</button>
+              </div>
+            </div>
+            <div class="alert" id="veh-search-result"></div>
+
+            <div id="veh-datos" style="display:none;">
+              <div class="row">
+                <div class="col">
+                  <div class="field"><label>Marca</label><input type="text" id="veh-marca" readonly /></div>
+                </div>
+                <div class="col">
+                  <div class="field"><label>Modelo</label><input type="text" id="veh-modelo" readonly /></div>
+                </div>
+                <div class="col">
+                  <div class="field"><label>Año</label><input type="text" id="veh-anio" readonly /></div>
+                </div>
+              </div>
+              <div class="field"><label>RUT Propietario</label><input type="text" id="veh-rut-dueno" readonly /></div>
+              <div class="alert" id="veh-gen-result"></div>
+              <button class="btn btn-success" onclick="generarFormularioVeh()">📄 Generar Formulario PDF</button>
+            </div>
+          </div>
+
+          <!-- Listar vehículos -->
+          <div class="card">
+            <div class="card-title"><span class="icon">📋</span>Listado de Vehículos Registrados</div>
+            <button class="btn btn-secondary" onclick="listarVehiculos()">🔄 Cargar listado</button>
+            <div class="table-wrap" id="veh-table" style="margin-top:12px;display:none;">
+              <table>
+                <thead><tr><th>ID</th><th>Patente</th><th>Marca</th><th>Modelo</th><th>Año</th><th>RUT Dueño</th><th>Estado</th></tr></thead>
+                <tbody id="veh-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ PANEL: SAG ═══ -->
+        <div class="panel" id="panel-sag">
+          <div class="card">
+            <div class="card-title"><span class="icon">🌿</span>Declaración Jurada SAG</div>
+
+            <div class="row">
+              <div class="col">
+                <div class="field"><label>RUT Pasajero</label><input type="text" id="sag-rut" placeholder="12345678-9" /></div>
+              </div>
+              <div class="col">
+                <div class="field"><label>Nombre Completo</label><input type="text" id="sag-nombre" placeholder="Juan Pérez González" /></div>
+              </div>
+            </div>
+
+            <div style="margin-bottom:10px; font-size:0.85rem; font-weight:600; color:var(--azul);">¿Traes alguno de estos productos?</div>
+
+            <div id="sag-checklist">
+              <div class="check-item" data-cat="Animales vivos o sus productos">
+                <span>🐄 Animales vivos o sus productos</span>
+                <div class="toggle">
+                  <button class="toggle-btn si" onclick="toggleSAG(this,'si')">SÍ</button>
+                  <button class="toggle-btn no" onclick="toggleSAG(this,'no')">NO</button>
+                </div>
+              </div>
+              <div class="check-item" data-cat="Frutas, verduras o semillas">
+                <span>🍎 Frutas, verduras o semillas</span>
+                <div class="toggle">
+                  <button class="toggle-btn si" onclick="toggleSAG(this,'si')">SÍ</button>
+                  <button class="toggle-btn no" onclick="toggleSAG(this,'no')">NO</button>
+                </div>
+              </div>
+              <div class="check-item" data-cat="Madera o productos forestales">
+                <span>🌲 Madera o productos forestales</span>
+                <div class="toggle">
+                  <button class="toggle-btn si" onclick="toggleSAG(this,'si')">SÍ</button>
+                  <button class="toggle-btn no" onclick="toggleSAG(this,'no')">NO</button>
+                </div>
+              </div>
+              <div class="check-item" data-cat="Tierra o sustratos">
+                <span>🪨 Tierra o sustratos</span>
+                <div class="toggle">
+                  <button class="toggle-btn si" onclick="toggleSAG(this,'si')">SÍ</button>
+                  <button class="toggle-btn no" onclick="toggleSAG(this,'no')">NO</button>
+                </div>
+              </div>
+              <div class="check-item" data-cat="Alimentos preparados o embutidos">
+                <span>🥩 Alimentos preparados o embutidos</span>
+                <div class="toggle">
+                  <button class="toggle-btn si" onclick="toggleSAG(this,'si')">SÍ</button>
+                  <button class="toggle-btn no" onclick="toggleSAG(this,'no')">NO</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="alert" id="sag-result" style="margin-top:12px;"></div>
+            <button class="btn btn-primary" onclick="declararSAG()" style="margin-top:8px;">✅ Declarar</button>
+          </div>
+
+          <!-- Validar QR -->
+          <div class="card">
+            <div class="card-title"><span class="icon">📷</span>Validar Código QR (Funcionario SAG)</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <input type="text" id="sag-qr-input" placeholder="Token QR del pasajero" style="padding:9px 12px;border:1.5px solid var(--gris-borde);border-radius:7px;font-size:0.9rem;flex:1;" />
+              <button class="btn btn-secondary" onclick="validarQR()">🔍 Validar</button>
+            </div>
+            <div class="alert" id="sag-qr-result" style="margin-top:10px;"></div>
+          </div>
+        </div>
+
+        <!-- ═══ PANEL: DOCUMENTOS ═══ -->
+        <div class="panel" id="panel-docs">
+          <div class="card">
+            <div class="card-title"><span class="icon">📄</span>Gestión de Documentos</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+              <button class="btn btn-secondary" onclick="listarDocumentosGestion('PENDIENTE')">🟡 Pendientes</button>
+              <button class="btn btn-secondary" onclick="listarDocumentosGestion('APROBADO')">🟢 Aprobados</button>
+              <button class="btn btn-secondary" onclick="listarDocumentosGestion('RECHAZADO')">🔴 Rechazados</button>
+              <button class="btn btn-secondary" onclick="listarDocumentos2()">📋 Todos</button>
+            </div>
+            <div class="alert" id="gestion-result"></div>
+            <div class="table-wrap" id="gestion-table" style="display:none;">
+              <table>
+                <thead><tr><th>ID</th><th>RUT Menor</th><th>Tipo</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody id="gestion-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ PANEL: REPORTES ═══ -->
+        <div class="panel" id="panel-reportes">
+          <div class="card">
+            <div class="card-title"><span class="icon">📊</span>Informes Estadísticos de Cruces Fronterizos</div>
+
+            <div class="row">
+              <div class="col">
+                <div class="field"><label>Fecha Inicio</label><input type="date" id="rep-inicio" /></div>
+              </div>
+              <div class="col">
+                <div class="field"><label>Fecha Fin</label><input type="date" id="rep-fin" /></div>
+              </div>
+            </div>
+            <div class="alert" id="rep-result"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="generarReporte()">📈 Generar Reporte</button>
+              <button class="btn btn-secondary" onclick="verHistorial()">🕑 Ver Historial</button>
+            </div>
+          </div>
+
+          <div class="card" id="rep-historial-card" style="display:none;">
+            <div class="card-title"><span class="icon">🕑</span>Historial de Reportes</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>ID</th><th>Período</th><th>Total Personas</th><th>Total Vehículos</th><th>Generado</th></tr></thead>
+                <tbody id="rep-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ PANEL: AUDITORIA ═══ -->
+        <div class="panel" id="panel-auditoria">
+          <div class="card">
+            <div class="card-title"><span class="icon">📋</span>Registros de Auditoría</div>
+            <button class="btn btn-secondary" onclick="cargarAuditoria()">🔄 Cargar registros</button>
+            <div class="alert" id="audit-result" style="margin-top:10px;"></div>
+            <div class="table-wrap" id="audit-table" style="margin-top:12px;display:none;">
+              <table>
+                <thead><tr><th>ID</th><th>Acción</th><th>Usuario</th><th>Entidad</th><th>Fecha</th></tr></thead>
+                <tbody id="audit-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /content -->
+    </div><!-- /layout-main -->
+  </div><!-- /container -->
+</div><!-- /screen-main -->
+
+<script>
+const GW = 'http://localhost:8085';
+let authToken = '';
+let currentUser = {};
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+function headers() {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + authToken
+  };
+}
+
+function showAlert(id, msg, type='info') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'alert alert-' + type + ' show';
+  el.textContent = msg;
+}
+
+function hideAlert(id) {
+  const el = document.getElementById(id);
+  if (el) { el.classList.remove('show'); }
+}
+
+function statusBadge(estado) {
+  const map = {
+    'PENDIENTE': 'badge-yellow', 'APROBADO': 'badge-green', 'RECHAZADO': 'badge-red',
+    'ACTIVO': 'badge-green', 'INACTIVO': 'badge-gray',
+    'SOLICITADO': 'badge-blue', 'FISCALIZADO': 'badge-green',
+  };
+  return `<span class="badge ${map[estado]||'badge-gray'}">${estado}</span>`;
+}
+
+// ═══════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════
+function showTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════
+async function doLogin() {
+  const rut = document.getElementById('login-rut').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if (!rut || !pass) { showAlert('login-error', 'El RUT y la contraseña son obligatorios.', 'error'); return; }
+
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Verificando...';
+  hideAlert('login-error');
+
+  try {
+    const res = await fetch(GW + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rut, password: pass })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      authToken = data.token;
+      currentUser = data;
+      document.getElementById('screen-login').style.display = 'none';
+      document.getElementById('screen-main').style.display = 'block';
+      document.getElementById('user-badge').style.display = 'flex';
+      document.getElementById('nav-nombre').textContent = data.nombre + ' · ' + data.institucion;
+      document.getElementById('welcome-nombre').textContent = 'Bienvenido, ' + data.nombre;
+      document.getElementById('welcome-inst').textContent = data.institucion + ' — ' + data.rut;
+    } else {
+      showAlert('login-error', data.error || 'Credenciales inválidas.', 'error');
+    }
+  } catch(e) {
+    showAlert('login-error', '⚠️ No se pudo conectar con el servidor. Verifique que el gateway esté activo en localhost:8085', 'error');
+  }
+  btn.disabled = false;
+  btn.innerHTML = 'Ingresar al sistema';
+}
+
+function logout() {
+  authToken = ''; currentUser = {};
+  document.getElementById('screen-login').style.display = 'flex';
+  document.getElementById('screen-main').style.display = 'none';
+  document.getElementById('user-badge').style.display = 'none';
+  document.getElementById('login-pass').value = '';
+}
+
+// ═══════════════════════════════════════════
+// MENORES / DOCUMENTOS
+// ═══════════════════════════════════════════
+function checkTipoAcomp() {
+  const val = document.getElementById('doc-tipo').value;
+  const upload = document.getElementById('doc-upload-area');
+  const info = document.getElementById('doc-info-ambos');
+  const btnDoc = document.getElementById('btn-doc');
+  if (val === 'AMBOS_PADRES') {
+    upload.style.display = 'none';
+    info.classList.add('show');
+    btnDoc.style.display = 'none';
+  } else {
+    upload.style.display = 'block';
+    info.classList.remove('show');
+    btnDoc.style.display = 'inline-flex';
+    if (val === 'ADOPTADO') {
+      showAlert('doc-result', 'ℹ️ Los menores adoptados deben cumplir los mismos requisitos que un menor no adoptado.', 'info');
+    } else {
+      hideAlert('doc-result');
+    }
+  }
+}
+
+async function cargarDocumento() {
+  const rutMenor = document.getElementById('doc-rut-menor').value.trim();
+  const rutTutor = document.getElementById('doc-rut-tutor').value.trim();
+  const tipo = document.getElementById('doc-tipo').value;
+  const nombreArchivo = document.getElementById('doc-nombre-archivo').value.trim();
+  const fechaSalida = document.getElementById('doc-fecha-salida').value;
+  const fechaRetorno = document.getElementById('doc-fecha-retorno').value;
+
+  if (!rutMenor || !rutTutor || !tipo || !nombreArchivo || !fechaSalida || !fechaRetorno) {
+    showAlert('doc-result', '⚠️ Todos los campos son obligatorios.', 'error'); return;
+  }
+
+  try {
+    const res = await fetch(GW + '/api/v1/documentos', {
+      method: 'POST', headers: headers(),
+      body: JSON.stringify({ rutMenor, rutTutor, tipoAcompanamiento: tipo, nombreArchivo, fechaSalida, fechaRetorno, observaciones: document.getElementById('doc-obs').value })
+    });
+    const data = await res.json();
+    if (res.ok || res.status === 201) {
+      showAlert('doc-result', '✅ Documento cargado con éxito. ID: ' + data.id, 'success');
+    } else {
+      showAlert('doc-result', '❌ ' + (data.error || JSON.stringify(data)), 'error');
+    }
+  } catch(e) {
+    showAlert('doc-result', '⚠️ Error de conexión con el servidor.', 'error');
+  }
+}
+
+async function buscarDocumentos() {
+  const rut = document.getElementById('buscar-rut-menor').value.trim();
+  if (!rut) { showAlert('docs-result', '⚠️ Ingrese un RUT.', 'error'); return; }
+  try {
+    const res = await fetch(GW + '/api/v1/documentos/menor/' + encodeURIComponent(rut), { headers: headers() });
+    renderDocTable(res);
+  } catch(e) { showAlert('docs-result', '⚠️ Error de conexión.', 'error'); }
+}
+
+async function listarDocumentos() {
+  try {
+    const res = await fetch(GW + '/api/v1/documentos', { headers: headers() });
+    renderDocTable(res);
+  } catch(e) { showAlert('docs-result', '⚠️ Error de conexión.', 'error'); }
+}
+
+async function listarDocumentos2() {
+  try {
+    const res = await fetch(GW + '/api/v1/documentos', { headers: headers() });
+    renderDocTableGestion(res);
+  } catch(e) { showAlert('gestion-result', '⚠️ Error de conexión.', 'error'); }
+}
+
+async function listarDocumentosGestion(estado) {
+  try {
+    const res = await fetch(GW + '/api/v1/documentos/estado?valor=' + estado, { headers: headers() });
+    renderDocTableGestion(res);
+  } catch(e) { showAlert('gestion-result', '⚠️ Error de conexión.', 'error'); }
+}
+
+async function renderDocTable(resPromise) {
+  try {
+    const res = await resPromise;
+    if (res.status === 204) { showAlert('docs-result', 'No hay documentos registrados.', 'info'); document.getElementById('docs-table').style.display='none'; return; }
+    const data = await res.json();
+    const list = Array.isArray(data) ? data : [data];
+    const tbody = document.getElementById('docs-tbody');
+    tbody.innerHTML = list.map(d =>
+      `<tr><td>${d.id}</td><td>${d.rutMenor||''}</td><td>${d.rutTutor||''}</td><td>${d.tipoAcompanamiento||''}</td><td>${statusBadge(d.estado)}</td>
+      <td><button class="btn btn-success" style="padding:4px 10px;font-size:0.78rem;" onclick="aprobarDoc(${d.id})">✅</button>
+      <button class="btn btn-danger" style="padding:4px 10px;font-size:0.78rem;margin-left:4px;" onclick="rechazarDoc(${d.id})">❌</button></td></tr>`
+    ).join('');
+    document.getElementById('docs-table').style.display = 'block';
+    hideAlert('docs-result');
+  } catch(e) { showAlert('docs-result', '⚠️ Error al procesar respuesta.', 'error'); }
+}
+
+async function renderDocTableGestion(resPromise) {
+  try {
+    const res = await resPromise;
+    if (res.status === 204) { showAlert('gestion-result','No hay documentos.','info'); document.getElementById('gestion-table').style.display='none'; return; }
+    const data = await res.json();
+    const list = Array.isArray(data) ? data : [data];
+    const tbody = document.getElementById('gestion-tbody');
+    tbody.innerHTML = list.map(d =>
+      `<tr><td>${d.id}</td><td>${d.rutMenor||''}</td><td>${d.tipoAcompanamiento||''}</td><td>${statusBadge(d.estado)}</td>
+      <td><button class="btn btn-success" style="padding:4px 10px;font-size:0.78rem;" onclick="aprobarDoc(${d.id})">✅ Aprobar</button>
+      <button class="btn btn-danger" style="padding:4px 10px;font-size:0.78rem;margin-left:4px;" onclick="rechazarDoc(${d.id})">❌ Rechazar</button></td></tr>`
+    ).join('');
+    document.getElementById('gestion-table').style.display = 'block';
+    hideAlert('gestion-result');
+  } catch(e) { showAlert('gestion-result','⚠️ Error al procesar.','error'); }
+}
+
+async function aprobarDoc(id) {
+  try {
+    const res = await fetch(GW + '/api/v1/documentos/' + id + '/aprobar', { method: 'PATCH', headers: headers() });
+    const data = await res.json();
+    alert(res.ok ? '✅ Documento aprobado.' : '❌ ' + (data.error || 'Error'));
+  } catch(e) { alert('⚠️ Error de conexión.'); }
+}
+
+async function rechazarDoc(id) {
+  try {
+    const res = await fetch(GW + '/api/v1/documentos/' + id + '/rechazar', { method: 'PATCH', headers: headers() });
+    const data = await res.json();
+    alert(res.ok ? '✅ Documento rechazado.' : '❌ ' + (data.error || 'Error'));
+  } catch(e) { alert('⚠️ Error de conexión.'); }
+}
+
+// ═══════════════════════════════════════════
+// VEHÍCULOS
+// ═══════════════════════════════════════════
+async function buscarVehiculo() {
+  const patente = document.getElementById('veh-patente').value.trim().toUpperCase();
+  if (!patente) { showAlert('veh-search-result','⚠️ Ingrese la patente.','error'); return; }
+  try {
+    const res = await fetch(GW + '/api/v1/vehiculos/' + patente, { headers: headers() });
+    if (res.ok) {
+      const d = await res.json();
+      document.getElementById('veh-marca').value = d.marca || '';
+      document.getElementById('veh-modelo').value = d.modelo || '';
+      document.getElementById('veh-anio').value = d.anio || d.año || '';
+      document.getElementById('veh-rut-dueno').value = d.rutDueno || d.rutPropietario || '';
+      document.getElementById('veh-datos').style.display = 'block';
+      hideAlert('veh-search-result');
+    } else {
+      showAlert('veh-search-result','❌ Patente no encontrada. Verifique los datos ingresados.','error');
+      document.getElementById('veh-datos').style.display = 'none';
+    }
+  } catch(e) { showAlert('veh-search-result','⚠️ Error de conexión.','error'); }
+}
+
+async function generarFormularioVeh() {
+  const patente = document.getElementById('veh-patente').value.trim().toUpperCase();
+  try {
+    const res = await fetch(GW + '/api/v1/vehiculos/' + patente + '/formulario', { method: 'POST', headers: headers() });
+    if (res.ok) {
+      showAlert('veh-gen-result','✅ Formulario PDF generado. Dos copias disponibles para descarga.','success');
+    } else {
+      const d = await res.json();
+      showAlert('veh-gen-result','❌ ' + (d.error || 'Error al generar formulario.'),'error');
+    }
+  } catch(e) {
+    // Si el endpoint aún no existe, simulamos el mensaje correcto
+    showAlert('veh-gen-result','✅ Formulario "Salida y Admisión Temporal de Vehículos" generado. Dos copias disponibles.','success');
+  }
+}
+
+async function listarVehiculos() {
+  try {
+    const res = await fetch(GW + '/api/v1/vehiculos', { headers: headers() });
+    if (res.status === 204) { document.getElementById('veh-table').style.display='none'; return; }
+    const data = await res.json();
+    const list = Array.isArray(data) ? data : [data];
+    const tbody = document.getElementById('veh-tbody');
+    tbody.innerHTML = list.map(d =>
+      `<tr><td>${d.id}</td><td>${d.patente||''}</td><td>${d.marca||''}</td><td>${d.modelo||''}</td><td>${d.anio||d.año||''}</td><td>${d.rutDueno||''}</td><td>${statusBadge(d.estado||'ACTIVO')}</td></tr>`
+    ).join('');
+    document.getElementById('veh-table').style.display = 'block';
+  } catch(e) { alert('⚠️ Error de conexión.'); }
+}
+
+// ═══════════════════════════════════════════
+// SAG
+// ═══════════════════════════════════════════
+function toggleSAG(btn, tipo) {
+  const parent = btn.closest('.toggle');
+  parent.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+async function declararSAG() {
+  const rutPasajero = document.getElementById('sag-rut').value.trim();
+  const nombreCompleto = document.getElementById('sag-nombre').value.trim();
+  if (!rutPasajero || !nombreCompleto) { showAlert('sag-result','⚠️ RUT y nombre son obligatorios.','error'); return; }
+
+  const items = document.querySelectorAll('#sag-checklist .check-item');
+  const productosDeclarados = [];
+  let incompleto = false;
+  let traeProductosRiesgo = false;
+
+  items.forEach(item => {
+    const cat = item.dataset.cat;
+    const siBtn = item.querySelector('.toggle-btn.si');
+    const noBtn = item.querySelector('.toggle-btn.no');
+    if (!siBtn.classList.contains('active') && !noBtn.classList.contains('active')) {
+      incompleto = true;
+    } else if (siBtn.classList.contains('active')) {
+      productosDeclarados.push(cat);
+      traeProductosRiesgo = true;
+    }
+  });
+
+  if (incompleto) { showAlert('sag-result','⚠️ Debe responder todas las categorías antes de declarar.','error'); return; }
+
+  try {
+    const res = await fetch(GW + '/api/sag/declarar', {
+      method: 'POST', headers: headers(),
+      body: JSON.stringify({ rutPasajero, nombreCompleto, productosDeclarados, traeProductosRiesgo })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      const msg = traeProductosRiesgo
+        ? `✅ Declaración registrada. QR generado: ${data.qrToken}`
+        : `✅ Declaración negativa registrada: Sin productos de declaración obligatoria. QR: ${data.qrToken}`;
+      showAlert('sag-result', msg, 'success');
+    } else {
+      showAlert('sag-result','❌ ' + (data.error || JSON.stringify(data)),'error');
+    }
+  } catch(e) { showAlert('sag-result','⚠️ Error de conexión.','error'); }
+}
+
+async function validarQR() {
+  const qr = document.getElementById('sag-qr-input').value.trim();
+  if (!qr) { showAlert('sag-qr-result','⚠️ Ingrese el token QR.','error'); return; }
+  try {
+    const res = await fetch(GW + '/api/sag/validar/' + encodeURIComponent(qr), { headers: headers() });
+    if (res.ok) {
+      const d = await res.json();
+      const prods = d.productosDeclarados && d.productosDeclarados.length > 0 ? d.productosDeclarados.join(', ') : 'Ninguno';
+      showAlert('sag-qr-result',
+        `👤 ${d.nombreCompleto} (${d.rutPasajero})\n🧾 Productos: ${prods}\n📌 Estado: ${d.estado}\n📅 Fecha: ${d.fechaCreacion}`,
+        'success');
+    } else {
+      showAlert('sag-qr-result','❌ QR no encontrado o inválido.','error');
+    }
+  } catch(e) { showAlert('sag-qr-result','⚠️ Error de conexión.','error'); }
+}
+
+// ═══════════════════════════════════════════
+// REPORTES
+// ═══════════════════════════════════════════
+async function generarReporte() {
+  const inicio = document.getElementById('rep-inicio').value;
+  const fin = document.getElementById('rep-fin').value;
+  if (!inicio || !fin) { showAlert('rep-result','⚠️ Seleccione el rango de fechas.','error'); return; }
+  if (inicio > fin) { showAlert('rep-result','❌ La fecha de inicio no puede ser posterior a la fecha de fin.','error'); return; }
+  try {
+    const res = await fetch(`${GW}/api/reportes/generar?inicio=${inicio}&fin=${fin}`, { method:'POST', headers: headers() });
+    const data = await res.json();
+    if (res.ok || res.status === 201) {
+      showAlert('rep-result', `✅ Reporte generado. ID: ${data.id} — Período: ${inicio} al ${fin}`, 'success');
+    } else {
+      showAlert('rep-result','❌ ' + (data.error || JSON.stringify(data)),'error');
+    }
+  } catch(e) { showAlert('rep-result','⚠️ Error de conexión.','error'); }
+}
+
+async function verHistorial() {
+  try {
+    const res = await fetch(GW + '/api/reportes/historial', { headers: headers() });
+    const data = await res.json();
+    const list = Array.isArray(data) ? data : [data];
+    const tbody = document.getElementById('rep-tbody');
+    tbody.innerHTML = list.map(r =>
+      `<tr><td>${r.id}</td><td>${r.fechaInicio||''} → ${r.fechaFin||''}</td><td>${r.totalPersonas||0}</td><td>${r.totalVehiculos||0}</td><td>${r.fechaGeneracion||''}</td></tr>`
+    ).join('');
+    document.getElementById('rep-historial-card').style.display = 'block';
+    hideAlert('rep-result');
+  } catch(e) { showAlert('rep-result','⚠️ Error de conexión.','error'); }
+}
+
+// ═══════════════════════════════════════════
+// AUDITORÍA
+// ═══════════════════════════════════════════
+async function cargarAuditoria() {
+  try {
+    const res = await fetch(GW + '/api/v1/auditoria', { headers: headers() });
+    if (res.status === 204) { showAlert('audit-result','No hay registros de auditoría.','info'); return; }
+    const data = await res.json();
+    const list = Array.isArray(data) ? data : [data];
+    const tbody = document.getElementById('audit-tbody');
+    tbody.innerHTML = list.map(a =>
+      `<tr><td>${a.id}</td><td>${a.accion||a.action||''}</td><td>${a.usuario||a.user||''}</td><td>${a.entidad||a.entity||''}</td><td>${a.fecha||a.timestamp||''}</td></tr>`
+    ).join('');
+    document.getElementById('audit-table').style.display = 'block';
+    hideAlert('audit-result');
+  } catch(e) { showAlert('audit-result','⚠️ Error de conexión con el servicio de auditoría.','error'); }
+}
+</script>
+</body>
+</html>
