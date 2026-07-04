@@ -1,0 +1,123 @@
+=====================================================================
+SECUPASS - ENLACES SWAGGER Y ENDPOINTS PARA POSTMAN
+=====================================================================
+Orden de arranque: 1) Eureka-Server  2) resto de los servicios (cualquier orden)  3) API-Gateway al final
+
+CREDENCIALES BASIC AUTH (Docs, Audit, Vehicle, Report, SAG):
+  Usuario:    omar_jefe
+  Password:   SecuPass2026!
+  (Auth-Service NO requiere credenciales, ahi se hace login)
+
+=====================================================================
+1) EUREKA-SERVER  (puerto 8761)
+=====================================================================
+Panel de Eureka (ver que todos los servicios esten registrados):
+  http://localhost:8761
+
+=====================================================================
+2) AUTH-SERVICE  (puerto 8080)  -- SIN AUTENTICACION
+=====================================================================
+Swagger UI:
+  http://localhost:8080/swagger-ui.html
+Health check:
+  http://localhost:8080/auth/health
+
+Endpoints para Postman:
+  POST  http://localhost:8080/auth/registrar
+  POST  http://localhost:8080/auth/login
+  GET   http://localhost:8080/auth/health
+
+=====================================================================
+3) AUDIT-SERVICE  (puerto 8081)  -- Basic Auth
+=====================================================================
+Swagger UI:
+  http://localhost:8081/swagger-ui.html
+Health check (sin auth):
+  http://localhost:8081/api/v1/auditoria/health
+
+Endpoints para Postman (con Basic Auth):
+  GET   http://localhost:8081/api/v1/auditoria/{id}
+  GET   http://localhost:8081/api/v1/auditoria/rut/{rut}
+  GET   http://localhost:8081/api/v1/auditoria/institucion
+  GET   http://localhost:8081/api/v1/auditoria/accion
+  GET   http://localhost:8081/api/v1/auditoria/resultado
+  GET   http://localhost:8081/api/v1/auditoria/fechas
+
+=====================================================================
+4) DOCS-SERVICE  (puerto 8082)  -- Basic Auth
+=====================================================================
+Swagger UI:
+  http://localhost:8082/swagger-ui.html
+Health check (sin auth):
+  http://localhost:8082/api/v1/documentos/health
+
+Endpoints para Postman (con Basic Auth):
+  GET     http://localhost:8082/api/v1/documentos/{id}
+  GET     http://localhost:8082/api/v1/documentos/menor/{rut}
+  GET     http://localhost:8082/api/v1/documentos/tutor/{rut}
+  GET     http://localhost:8082/api/v1/documentos/estado
+  PATCH   http://localhost:8082/api/v1/documentos/{id}/aprobar
+  PATCH   http://localhost:8082/api/v1/documentos/{id}/rechazar
+  DELETE  http://localhost:8082/api/v1/documentos/{id}
+
+=====================================================================
+5) SAG-SERVICE  (puerto 8083)  -- Basic Auth
+=====================================================================
+Swagger UI: NO DISPONIBLE (falta la dependencia springdoc en el pom.xml)
+Health check: no tiene endpoint de health propio todavia
+
+Endpoints para Postman (con Basic Auth):
+  POST  http://localhost:8083/api/sag/declarar
+  GET   http://localhost:8083/api/sag/validar/{qrToken}
+  PUT   http://localhost:8083/api/sag/fiscalizar/{qrToken}?estado=APROBADO
+        (estado puede ser APROBADO o RECHAZADO)
+
+=====================================================================
+6) API-GATEWAY  (puerto 8085)
+=====================================================================
+Todo lo anterior tambien se puede llamar a traves del Gateway,
+usando el nombre del servicio registrado en Eureka en vez del puerto directo.
+Ejemplo:
+  http://localhost:8085/auth/login              -> redirige a Auth-Service
+  http://localhost:8085/api/v1/vehiculos/health  -> redirige a Vehicle-Service
+
+=====================================================================
+7) REPORT-SERVICE  (puerto 8086)  -- Basic Auth
+=====================================================================
+Swagger UI: NO DISPONIBLE (falta la dependencia springdoc en el pom.xml)
+Health check: no tiene endpoint de health propio todavia
+
+Endpoints para Postman (con Basic Auth):
+  POST  http://localhost:8086/api/reportes/generar
+  GET   http://localhost:8086/api/reportes/historial
+
+=====================================================================
+8) VEHICLE-SERVICE  (puerto 8087)  -- Basic Auth
+=====================================================================
+Swagger UI:
+  http://localhost:8087/swagger-ui.html
+Health check (sin auth):
+  http://localhost:8087/api/v1/vehiculos/health
+
+Endpoints para Postman (con Basic Auth):
+  GET     http://localhost:8087/api/v1/vehiculos/{id}
+  GET     http://localhost:8087/api/v1/vehiculos/patente/{patente}
+  GET     http://localhost:8087/api/v1/vehiculos/propietario/{rut}
+  GET     http://localhost:8087/api/v1/vehiculos/estado
+  GET     http://localhost:8087/api/v1/vehiculos/destino/{pais}
+  PATCH   http://localhost:8087/api/v1/vehiculos/{id}/generar-formulario
+  PATCH   http://localhost:8087/api/v1/vehiculos/{id}/procesar
+  DELETE  http://localhost:8087/api/v1/vehiculos/{id}
+  (falta el POST de registrar en esta lista de arriba, revisar
+   el controller si no aparece un @PostMapping sin ruta adicional)
+
+=====================================================================
+PENDIENTE / OJO
+=====================================================================
+- SAG-Service y Report-Service NO tienen Swagger habilitado
+  (falta agregar la dependencia springdoc-openapi-starter-webmvc-ui
+  en su pom.xml, igual que tienen Auth/Audit/Docs/Vehicle).
+  Avisame si quieres que te lo agregue.
+
+- En Postman, para Basic Auth: pestaña "Authorization" -> tipo "Basic Auth"
+  -> Username: omar_jefe / Password: SecuPass2026!
