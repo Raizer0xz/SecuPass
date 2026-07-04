@@ -11,13 +11,13 @@
         <option value="$PROJECT_DIR$/Report Service/Report-Service/pom.xml" />
         <option value="$PROJECT_DIR$/Docs Service/Docs-Service/pom.xml" />
         <option value="$PROJECT_DIR$/Report-Service/pom.xml" />
-        <option value="$PROJECT_DIR$/SAG-Service/pom.xml" />
         <option value="$PROJECT_DIR$/API-Gateway/pom.xml" />
         <option value="$PROJECT_DIR$/Audit-Service/pom.xml" />
         <option value="$PROJECT_DIR$/Auth-Service/pom.xml" />
         <option value="$PROJECT_DIR$/Docs-Service/pom.xml" />
         <option value="$PROJECT_DIR$/Eureka-Server/pom.xml" />
         <option value="$PROJECT_DIR$/Vehicle-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/SAG-Service/pom.xml" />
       </list>
     </option>
   </component>

@@ -9,11 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/sag")
-@CrossOrigin(origins = "*")
 public class DeclaracionController {
 
     @Autowired
-    private DeclaracionService declaracionService;
+    private DeclaracionService  declaracionService;
 
     @PostMapping("/declarar")
     public ResponseEntity<Declaracion> crearDeclaracion(@Valid @RequestBody Declaracion declaracion) {
