@@ -63,7 +63,8 @@ Endpoints para Postman (con Basic Auth):
 =====================================================================
 5) SAG-SERVICE  (puerto 8083)  -- Basic Auth
 =====================================================================
-Swagger UI: NO DISPONIBLE (falta la dependencia springdoc en el pom.xml)
+Swagger UI:
+  http://localhost:8083/swagger-ui.html
 Health check: no tiene endpoint de health propio todavia
 
 Endpoints para Postman (con Basic Auth):
@@ -84,7 +85,8 @@ Ejemplo:
 =====================================================================
 7) REPORT-SERVICE  (puerto 8086)  -- Basic Auth
 =====================================================================
-Swagger UI: NO DISPONIBLE (falta la dependencia springdoc en el pom.xml)
+Swagger UI:
+  http://localhost:8086/swagger-ui.html
 Health check: no tiene endpoint de health propio todavia
 
 Endpoints para Postman (con Basic Auth):
@@ -112,12 +114,7 @@ Endpoints para Postman (con Basic Auth):
    el controller si no aparece un @PostMapping sin ruta adicional)
 
 =====================================================================
-PENDIENTE / OJO
+OJO
 =====================================================================
-- SAG-Service y Report-Service NO tienen Swagger habilitado
-  (falta agregar la dependencia springdoc-openapi-starter-webmvc-ui
-  en su pom.xml, igual que tienen Auth/Audit/Docs/Vehicle).
-  Avisame si quieres que te lo agregue.
-
 - En Postman, para Basic Auth: pestaña "Authorization" -> tipo "Basic Auth"
   -> Username: omar_jefe / Password: SecuPass2026!
