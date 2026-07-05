@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/reportes")
+@RequestMapping("/api/v1/reportes")
 public class ReporteController {
 
     // 3. Atributo final para asegurar la inmutabilidad

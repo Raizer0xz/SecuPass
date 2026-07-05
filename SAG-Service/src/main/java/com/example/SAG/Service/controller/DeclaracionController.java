@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/sag")
+@RequestMapping("/api/v1/sag")
 public class DeclaracionController {
 
     @Autowired
