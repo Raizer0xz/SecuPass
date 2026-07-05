@@ -33,4 +33,7 @@ public class ReporteService {
     public List<ReporteFlujo> listarHistorialReportes() {
         return reporteRepository.findAll();
     }
+    public ReporteFlujo buscarPorId(Long id) {
+        return reporteRepository.findById(id).orElse(null);
+    }
 }
